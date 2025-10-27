@@ -335,3 +335,39 @@ class FetchRelatedDocumentView(APIView):
             "did": credential_id,
             "document": data
         }, status=status.HTTP_200_OK)
+    
+
+
+class PostListView(APIView):
+    """
+    List all published posts created by the authenticated user (issuer).
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        posts = Post.objects.filter(
+            is_published=True,
+            author=user
+        ).order_by('-vc_issuance_date')
+
+        post_list = []
+        for post in posts:
+            post_list.append({
+                "post_id": str(post.id),
+                "title": post.title,
+                "content": post.content,
+                "post_type": post.post_type,
+                "vc_status": post.vc_status,
+                "vc_issuer_did": post.vc_issuer_did,
+                "vc_type": post.vc_type,
+                "issuance_date": post.vc_issuance_date,
+                "expiration_date": post.vc_expiration_date,
+                "vc_proof": post.vc_proof,
+                "proof": post.proof
+            })
+
+        return Response({
+            "message": "Posts issued by the authenticated user fetched successfully",
+            "posts": post_list
+        }, status=status.HTTP_200_OK)
