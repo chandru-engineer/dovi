@@ -297,8 +297,8 @@ class FetchRelatedDocumentView(APIView):
     authentication_classes = []
     permission_classes = []
 
-    def post(self, request):
-        did = request.data.get("did", "").strip()
+    def post(self, request, did_id):
+        did = did_id.strip()
         if not did:
             return Response({"error": "DID identifier is required"}, status=status.HTTP_400_BAD_REQUEST)
 

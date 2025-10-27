@@ -9,7 +9,7 @@ urlpatterns = [
 
     path('verify', VerifyContentView.as_view(), name='verify-content'),
 
-    path('fetch/related/docs', FetchRelatedDocumentView.as_view(), name='fetch-related-docs'),
+    path('fetch/related/docs/<str:did_id>', FetchRelatedDocumentView.as_view(), name='fetch-related-docs'),
 ]
 
 
