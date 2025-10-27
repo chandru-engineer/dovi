@@ -11,10 +11,16 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+import os
+from dotenv import load_dotenv
+
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+# Load .env file
+load_dotenv(BASE_DIR / '.env')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -151,11 +157,7 @@ AWS_PRESIGNED_URL_EXPIRATION = int(os.getenv('AWS_PRESIGNED_URL_EXPIRATION', 360
 AWS_DID_DOCUMENT_BUCKET_NAME = os.getenv('AWS_DID_DOCUMENT_BUCKET_NAME', 'did-document')
 AWS_DID_DOCUMENT_URL = os.getenv('AWS_DID_DOCUMENT_URL', 'https://did.dholakpur.fun/did/')
 
-import os
-from dotenv import load_dotenv
 
-# Load .env file
-load_dotenv(BASE_DIR / '.env')
 
 # Example: reading from .env
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
