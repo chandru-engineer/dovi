@@ -93,6 +93,33 @@ TEMPLATES = [
 WSGI_APPLICATION = 'dovi_api.wsgi.application'
 
 
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    # Access token lifetime (default is 5 minutes)
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=24),
+
+    # Refresh token lifetime (default is 1 day)
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+
+    # Whether to rotate refresh tokens (optional)
+    'ROTATE_REFRESH_TOKENS': False,
+
+    # Whether to blacklist old refresh tokens after rotation
+    'BLACKLIST_AFTER_ROTATION': True,
+
+    # Signature algorithm (keep as HS256 unless you use RSA)
+    'ALGORITHM': 'HS256',
+
+    # You can specify your secret explicitly (optional)
+    'SIGNING_KEY': SECRET_KEY,
+
+    # Allow token to be refreshed even if the user changed password
+    'UPDATE_LAST_LOGIN': False,
+}
+
+
+
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
