@@ -1,0 +1,130 @@
+# =======================================
+# Python & Django
+# =======================================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.pdb
+
+
+# Django static and media
+/static/
+media/
+staticfiles/
+build/
+dist/
+
+# Django secret files
+.env
+.env.*
+*.env
+config/settings/local.py
+config/settings/dev.py
+
+# =======================================
+# Virtual Environments
+# =======================================
+venv/
+env/
+ENV/
+.venv/
+venv.bak/
+pip-wheel-metadata/
+
+# =======================================
+# IDE & Editor Settings
+# =======================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*.bak
+*.log
+
+# =======================================
+# Testing & Coverage
+# =======================================
+htmlcov/
+.tox/
+.nox/
+.coverage
+coverage.xml
+*.cover
+*.py,cover
+nosetests.xml
+test_results/
+tests/__pycache__/
+
+# =======================================
+# Migrations (Optional: Uncomment to ignore auto-generated ones)
+# =======================================
+# */migrations/
+# */migrations/*.py
+# !*/migrations/__init__.py
+
+# =======================================
+# Byte-compiled / optimized / DLL files
+# =======================================
+*.so
+*.dll
+*.dylib
+*.a
+*.o
+
+# =======================================
+# Distribution / Packaging
+# =======================================
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# =======================================
+# Logs & Runtime Files
+# =======================================
+*.log
+*.pot
+*.mo
+celerybeat-schedule
+celerybeat.pid
+
+# =======================================
+# OS / Misc
+# =======================================
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# =======================================
+# Docker
+# =======================================
+docker-compose.override.yml
+*.pid
+*.seed
+*.pem
+*.crt
+*.key
+
+# =======================================
+# Jupyter / Notebooks
+# =======================================
+.ipynb_checkpoints/
+
+# =======================================
+# Local Development
+# =======================================
+*.local
+*.dev
+*.tmp
+*.bak

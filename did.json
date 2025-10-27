@@ -1,0 +1,21 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/did/v1"
+  ],
+  "id": "did:web:did.dholakpur.fun:did:3092-0757-2194-4322",
+  "verificationMethod": [
+    {
+      "id": "did:web:did.dholakpur.fun:did:3092-0757-2194-4322#key-1",
+      "type": "Ed25519VerificationKey2018",
+      "controller": "did:web:did.dholakpur.fun:did:3092-0757-2194-4322",
+      "publicKeyBase64": "D0zVyHPGMYfyNH4tTPGzget9b_233jvEoKGn1eQZkuI="
+    }
+  ],
+  "authentication": [
+    "did:web:did.dholakpur.fun:did:3092-0757-2194-4322#key-1"
+  ],
+  "assertionMethod": [
+    "did:web:did.dholakpur.fun:did:3092-0757-2194-4322#key-1"
+  ],
+  "documentUrl": "https://did.dholakpur.fun/did/3092-0757-2194-4322/did.json"
+}
