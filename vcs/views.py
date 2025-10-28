@@ -163,7 +163,7 @@ class CreatePublisherPostView(APIView):
             content=content,
             post_type='publisher',
             is_published=True,
-            vc_status='Valid' if proof_data.get("content_integrity") else 'Invalid',
+            vc_status='Valid' if proof_data.get("content_integrity") == 'true' else 'Invalid',
             vc_issuer_did=profile.did_url,
             vc_proof={
                 "credential_id": credential_id,
