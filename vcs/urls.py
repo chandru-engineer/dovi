@@ -1,5 +1,5 @@
 from django.urls import path
-from vcs.views import CreateMinistryPostView, CreatePublisherPostView, VerifyContentView, FetchRelatedDocumentView, PostListView
+from vcs.views import CreateMinistryPostView, CreatePublisherPostView, VerifyContentView, FetchRelatedDocumentView, PostListView, AIssueVCFromPromptView
 
 
 
@@ -13,6 +13,8 @@ urlpatterns = [
     path('verify', VerifyContentView.as_view(), name='verify-content'),
 
     path('fetch/related/docs/<str:did_id>', FetchRelatedDocumentView.as_view(), name='fetch-related-docs'),
+
+    path('create/schema/vc', AIssueVCFromPromptView.as_view(), name='create-schema-vc'),
 ]
 
 

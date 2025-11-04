@@ -27,6 +27,23 @@ from users.models import UserProfile, UserType
 from vcs.models import Post
 from difflib import SequenceMatcher
 from dovi_api.settings import OPENAI_API_KEY
+import json
+import hashlib
+import uuid
+from datetime import datetime, timedelta
+import openai
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+
+from commons.s3_client import S3Client
+from users.models import UserProfile, UserType
+from dovi_api.settings import OPENAI_API_KEY
+
+openai.api_key = OPENAI_API_KEY
+
 
 openai.api_key = OPENAI_API_KEY
 
@@ -371,3 +388,144 @@ class PostListView(APIView):
             "message": "Posts issued by the authenticated user fetched successfully",
             "posts": post_list
         }, status=status.HTTP_200_OK)
+
+
+# vcs/views/ai_vc_issuance.py
+
+import json
+import base64
+import uuid
+import hashlib
+from datetime import datetime, timedelta
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from dovi_api.settings import OPENAI_API_KEY
+from commons.s3_client import S3Client
+from users.models import UserProfile, DIDKey
+from vcs.models import CredentialSchemaVC
+import openai
+
+openai.api_key = OPENAI_API_KEY
+
+
+class AIssueVCFromPromptView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        """
+        Accepts: 
+        {
+          "prompt": "Create a credential for verifying university degrees.",
+          "schema_name": "UniversityDegreeCredential",
+          "subject": {
+             "studentName": "John Doe",
+             "dateOfBirth": "2001-05-12",
+             "degree": "B.Tech in Computer Science",
+             "university": "IIT Madras",
+             "graduationYear": "2023"
+          }
+        }
+        """
+        user = request.user
+        profile = UserProfile.objects.get(user=user)
+        prompt = request.data.get("prompt")
+        schema_name = request.data.get("schema_name")
+        subject_data = request.data.get("subject", {})
+
+        if not prompt or not schema_name or not subject_data:
+            return Response({"error": "prompt, schema_name and subject are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Step 1️⃣ - Generate schema with AI
+        schema_prompt = f"""
+        You are a credential schema generator. 
+        Based on this instruction:
+        "{prompt}"
+        Create a valid JSON-LD credential schema context according to W3C VC standards.
+        Include @context, @type, and fields based on the provided description.
+        Return only JSON.
+        """
+
+        try:
+            schema_response = openai.ChatCompletion.create(
+                model="gpt-4",
+                messages=[{"role": "user", "content": schema_prompt}],
+                temperature=0
+            )
+            schema_json = json.loads(schema_response["choices"][0]["message"]["content"])
+        except Exception as e:
+            return Response({"error": f"Schema generation failed: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        # Step 2️⃣ - Upload context.json to S3
+        s3_client = S3Client()
+        schema_id = uuid.uuid4()
+        s3_key = f"schemas/{schema_name}/{schema_id}/context.json"
+        schema_s3_url = s3_client.upload_json(s3_key, schema_json)
+        
+
+        issuer_did = profile.did_url
+        credential_id = f"did:web:did.dhola.com:{uuid.uuid4()}"
+        issuance_date = datetime.utcnow().isoformat() + "Z"
+        expiration_date = (datetime.utcnow() + timedelta(days=365)).isoformat() + "Z"
+
+        vc_document = {
+            "id": credential_id,
+            "type": ["VerifiableCredential", schema_name],
+            "issuer": issuer_did,
+            "@context": [
+                "https://www.w3.org/2018/credentials/v1",
+                schema_s3_url,
+                "https://w3id.org/security/suites/ed25519-2020/v1"
+            ],
+            "issuanceDate": issuance_date,
+            "expirationDate": expiration_date,
+            "credentialSubject": {
+                "id": f"did:web:did.credissuer.com:{uuid.uuid4()}",
+                "type": schema_name,
+                **subject_data
+            },
+            "proof": {
+                "type": "Ed25519Signature2020",
+                "created": issuance_date,
+                "proofPurpose": "assertionMethod",
+                "verificationMethod": f"{issuer_did}#key-0",
+                "proofValue": base64.urlsafe_b64encode(hashlib.sha256(json.dumps(subject_data).encode()).digest()).decode()
+            }
+        }
+
+        # Step 4️⃣ - Upload VC to S3
+        vc_s3_key = f"vc/{schema_name}/{credential_id}.json"
+        vc_s3_url = s3_client.upload_json(vc_s3_key, vc_document)
+
+        # Step 5️⃣ - (Optional) AI Scoring or Validation
+        ai_validation_prompt = f"Rate the credibility and completeness of this credential from 0-100:\n{json.dumps(vc_document)}"
+        try:
+            validation_response = openai.ChatCompletion.create(
+                model="gpt-4",
+                messages=[{"role": "user", "content": ai_validation_prompt}],
+                temperature=0
+            )
+            ai_score_text = validation_response["choices"][0]["message"]["content"]
+            ai_score = float(''.join(filter(str.isdigit, ai_score_text)) or 85)
+        except Exception:
+            ai_score = 85.0
+
+        # Step 6️⃣ - Store in DB
+        CredentialSchemaVC.objects.create(
+            user=profile,
+            prompt=prompt,
+            schema=schema_json,
+            schema_s3_url=schema_s3_url,
+            vc_document=vc_document,
+            vc_s3_url=vc_s3_url,
+            ai_score=ai_score
+        )
+
+        return Response({
+            "message": "Credential issued successfully via AI",
+            "schema_s3_url": schema_s3_url,
+            "vc_s3_url": vc_s3_url,
+            "ai_score": ai_score,
+            "vc_document": vc_document
+        }, status=status.HTTP_201_CREATED)

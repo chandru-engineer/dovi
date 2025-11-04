@@ -43,3 +43,21 @@ class Post(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.author.username})"
+
+
+# models.py
+from django.db import models
+from users.models import UserProfile
+
+class CredentialSchemaVC(models.Model):
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name="issued_credentials")
+    prompt = models.TextField()
+    schema = models.JSONField()
+    schema_s3_url = models.URLField()
+    vc_document = models.JSONField()
+    vc_s3_url = models.URLField()
+    ai_score = models.FloatField(default=0.0)
+    issuance_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.user.username} - {self.schema.get('title', 'VC Schema')}"
