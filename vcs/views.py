@@ -465,7 +465,7 @@ class AIssueVCFromPromptView(APIView):
         
 
         issuer_did = profile.did_url
-        credential_id = f"did:web:did.dhola.com:{uuid.uuid4()}"
+        credential_id = f"did:web:did.dholakpur.fun:{uuid.uuid4()}"
         issuance_date = datetime.utcnow().isoformat() + "Z"
         expiration_date = (datetime.utcnow() + timedelta(days=365)).isoformat() + "Z"
 
@@ -481,7 +481,7 @@ class AIssueVCFromPromptView(APIView):
             "issuanceDate": issuance_date,
             "expirationDate": expiration_date,
             "credentialSubject": {
-                "id": f"did:web:did.credissuer.com:{uuid.uuid4()}",
+                "id": f"did:web:did.dholakpur.fun:{uuid.uuid4()}",
                 "type": schema_name,
                 **subject_data
             },
